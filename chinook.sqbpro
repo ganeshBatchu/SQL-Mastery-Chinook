@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="chinook.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="3287"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="MusicVideo" custom_title="0" dock_id="4" table="4,10:mainMusicVideo"/><dock_state state="000000ff00000000fd0000000100000002000003190000033dfc0100000003fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500320100000000000003190000000000000000fb000000160064006f0063006b00420072006f00770073006500340100000000000003190000010700ffffff000003190000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="MusicVideo" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="59"/><column index="2" value="101"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="albums" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="63"/><column index="2" value="300"/><column index="3" value="59"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1">-- ============================================
+-- Chinook Database SQL Assignment
+-- ============================================
+
+-- --------------------------------------------
+-- Query 1 (DDL): Create MusicVideo table
+-- --------------------------------------------
+CREATE TABLE MusicVideo (
+    TrackId INTEGER PRIMARY KEY,
+    VideoDirector NVARCHAR(120),
+    FOREIGN KEY (TrackId) REFERENCES tracks(TrackId)
+);
+
+-- --------------------------------------------
+-- Query 2 (DML): Insert 10 records into MusicVideo
+-- --------------------------------------------
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (1, 'Francis Lawrence');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (2, 'Wayne Isham');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (3, 'Anton Corbijn');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (4, 'Mark Romanek');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (5, 'David Fincher');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (6, 'Spike Jonze');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (7, 'Hype Williams');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (8, 'Chris Cunningham');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (9, 'Michel Gondry');
+INSERT INTO MusicVideo (TrackId, VideoDirector) VALUES (10, 'Jonas Åkerlund');
+
+-- --------------------------------------------
+-- Query 3 (Subquery Insert): Insert music video for 'Voodoo'
+-- --------------------------------------------
+INSERT INTO MusicVideo (TrackId, VideoDirector)
+VALUES (
+    (SELECT TrackId FROM tracks WHERE Name = 'Voodoo'),
+    'Samuel Bayer'
+);
+
+-- --------------------------------------------
+-- Query 4 (Pattern Matching): Tracks with accented characters
+-- --------------------------------------------
+SELECT Name
+FROM tracks
+WHERE Name LIKE '%á%'
+   OR Name LIKE '%é%'
+   OR Name LIKE '%í%'
+   OR Name LIKE '%ó%'
+   OR Name LIKE '%ú%'
+   OR Name LIKE '%Á%'
+   OR Name LIKE '%É%'
+   OR Name LIKE '%Í%'
+   OR Name LIKE '%Ó%'
+   OR Name LIKE '%Ú%';
+
+-- --------------------------------------------
+-- Query 5 (JOIN): Track, Album, and Artist information
+-- --------------------------------------------
+SELECT 
+    t.Name AS TrackName,
+    a.Title AS AlbumTitle,
+    ar.Name AS ArtistName
+FROM tracks t
+JOIN albums a ON t.AlbumId = a.AlbumId
+JOIN artists ar ON a.ArtistId = ar.ArtistId;
+
+-- --------------------------------------------
+-- Query 6 (GROUP BY): Count of tracks per genre
+-- --------------------------------------------
+SELECT 
+    g.Name AS GenreName,
+    COUNT(t.TrackId) AS TrackCount
+FROM genres g
+JOIN tracks t ON g.GenreId = t.GenreId
+GROUP BY g.Name
+ORDER BY TrackCount DESC;
+
+-- --------------------------------------------
+-- Query 7 (Bonus): Customers who purchased tracks longer than average
+-- Excluding tracks longer than 15 minutes (900,000 ms)
+-- --------------------------------------------
+SELECT DISTINCT 
+    c.FirstName,
+    c.LastName
+FROM customers c
+JOIN invoices i ON c.CustomerId = i.CustomerId
+JOIN invoice_items ii ON i.InvoiceId = ii.InvoiceId
+JOIN tracks t ON ii.TrackId = t.TrackId
+WHERE t.Milliseconds &gt; (SELECT AVG(Milliseconds) FROM tracks)
+  AND t.Milliseconds &lt;= 900000
+ORDER BY c.LastName, c.FirstName;
+
+-- --------------------------------------------
+-- Query 8 (Bonus): Tracks NOT in top 5 genres by total duration
+-- --------------------------------------------
+SELECT t.Name AS TrackName
+FROM tracks t
+WHERE t.GenreId NOT IN (
+    SELECT g.GenreId
+    FROM genres g
+    JOIN tracks tr ON g.GenreId = tr.GenreId
+    GROUP BY g.GenreId
+    ORDER BY SUM(tr.Milliseconds) DESC
+    LIMIT 5
+)
+ORDER BY t.Name;</sql><current_tab id="0"/></tab_sql></sqlb_project>
